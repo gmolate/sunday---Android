@@ -94,6 +94,13 @@ The app requires the following permissions:
 - **Internet**: Weather data and API communication
 - **Background Processing**: Widget updates and scheduled notifications
 
+## 📋 Build Requirements
+
+- **Android Studio**: 2024.3.1 (Meerkat) or newer
+- **JDK**: 17
+- **Android Gradle Plugin**: 8.9.1
+- **Gradle**: 8.11.1
+
 ## 🚀 Installation & Setup
 
 ### Development Setup
