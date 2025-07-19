@@ -14,15 +14,21 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            val useDarkTheme = isSystemInDarkTheme() // Esto debe estar vinculado a las preferencias del usuario.
-                                                    // Por ahora, usa el tema del sistema.
+            val useDarkTheme = isSystemInDarkTheme()
             SundayTheme(darkTheme = useDarkTheme) {
                 Surface(color = MaterialTheme.colorScheme.background) {
-                    MainScreen() // Asegúrate de que MainScreen esté en el mismo paquete o importado
+                    MainScreen()
                 }
             }
         }
     }
+}
+
+@Composable
+fun MainScreen() {
+    // Aquí puedes agregar contenido de ejemplo
+    // Por ejemplo:
+    // Text(text = "¡Hola Mundo!")
 }
 
 @Preview(showBackground = true)
