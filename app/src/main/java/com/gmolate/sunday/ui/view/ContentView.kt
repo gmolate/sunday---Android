@@ -96,104 +96,105 @@ fun ContentView(viewModel: MainViewModel) {
                         color = MaterialTheme.colorScheme.onErrorContainer
                     )
                 }
-            }
-
-            // Título principal
-            Text(
-                text = if (currentUv > 0) "ÍNDICE UV" else "FASE LUNAR",
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Medium,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
-                modifier = Modifier.padding(bottom = 8.dp)
-            )
-
-            // Valor principal - UV o fase lunar
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 16.dp),
-                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(24.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    AnimatedVisibility(
-                        visible = currentUv > 0,
-                        enter = fadeIn(animationSpec = tween(600)) + slideInVertically(),
-                        exit = fadeOut(animationSpec = tween(600)) + slideOutVertically()
-                    ) {
-                        Text(
-                            text = String.format("%.1f", currentUv),
-                            fontSize = 72.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = getUVColor(currentUv),
-                            modifier = Modifier.semantics {
-                                contentDescription = "Índice UV actual: ${String.format("%.1f", currentUv)}"
-                            }
-                        )
-                    }
-
-                    AnimatedVisibility(
-                        visible = currentUv <= 0,
-                        enter = fadeIn(animationSpec = tween(600)) + slideInVertically(),
-                        exit = fadeOut(animationSpec = tween(600)) + slideInVertically()
-                    ) {
-                        Text(
-                            text = getMoonPhaseDescription(moonPhase),
-                            fontSize = 24.sp,
-                            fontWeight = FontWeight.Medium,
-                            color = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.semantics {
-                                contentDescription = "Fase lunar actual: ${getMoonPhaseDescription(moonPhase)}"
-                            }
-                        )
-                    }
                 }
-            }
 
-            // Información adicional
-            if (currentUv > 0) {
-                UVInfoCard(currentUv = currentUv)
-            }
+                // Título principal
+                Text(
+                    text = if (currentUv > 0) "ÍNDICE UV" else "FASE LUNAR",
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
 
-            // Información de ubicación
-            location?.let { loc ->
+                // Valor principal - UV o fase lunar
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 8.dp),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                        .padding(vertical = 16.dp),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
                 ) {
                     Column(
-                        modifier = Modifier.padding(16.dp)
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(24.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Text(
-                            text = "Ubicación",
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Medium,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            text = "${String.format("%.3f", loc.latitude)}, ${String.format("%.3f", loc.longitude)}",
-                            fontSize = 12.sp,
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-                        )
+                        AnimatedVisibility(
+                            visible = currentUv > 0,
+                            enter = fadeIn(animationSpec = tween(600)) + slideInVertically(),
+                            exit = fadeOut(animationSpec = tween(600)) + slideOutVertically()
+                        ) {
+                            Text(
+                                text = String.format("%.1f", currentUv),
+                                fontSize = 72.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = getUVColor(currentUv),
+                                modifier = Modifier.semantics {
+                                    contentDescription = "Índice UV actual: ${String.format("%.1f", currentUv)}"
+                                }
+                            )
+                        }
+
+                        AnimatedVisibility(
+                            visible = currentUv <= 0,
+                            enter = fadeIn(animationSpec = tween(600)) + slideInVertically(),
+                            exit = fadeOut(animationSpec = tween(600)) + slideInVertically()
+                        ) {
+                            Text(
+                                text = getMoonPhaseDescription(moonPhase),
+                                fontSize = 24.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.semantics {
+                                    contentDescription = "Fase lunar actual: ${getMoonPhaseDescription(moonPhase)}"
+                                }
+                            )
+                        }
                     }
                 }
-            }
 
-            // Progreso de vitamina D
-            if (vitaminDProgress > 0) {
-                VitaminDProgressCard(progress = vitaminDProgress)
-            }
+                // Información adicional
+                if (currentUv > 0) {
+                    UVInfoCard(currentUv = currentUv)
+                }
 
-            // Datos de salud (si están disponibles)
-            healthData?.let { health ->
-                HealthDataCard(healthData = health)
+                // Información de ubicación
+                location?.let { loc ->
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 8.dp),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(16.dp)
+                        ) {
+                            Text(
+                                text = "Ubicación",
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = "${String.format("%.3f", loc.latitude)}, ${String.format("%.3f", loc.longitude)}",
+                                fontSize = 12.sp,
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                            )
+                        }
+                    }
+                }
+
+                // Progreso de vitamina D
+                if (vitaminDProgress > 0) {
+                    VitaminDProgressCard(progress = vitaminDProgress)
+                }
+
+                // Datos de salud (si están disponibles)
+                healthData?.let { health ->
+                    HealthDataCard(healthData = health)
+                }
             }
         }
     }
@@ -327,4 +328,4 @@ private fun getMoonPhaseDescription(phase: Double): String {
         else -> "Luna Nueva"
     }
 }
-"}}}
+}

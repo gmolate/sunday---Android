@@ -1,85 +1,28 @@
-// Top-level build file where you can add configuration options common to all sub-projects/modules.
-// buildscript {
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
+plugins {
+    id 'com.android.application' version '8.4.0' apply false
+    id 'com.android.library' version '8.4.0' apply false
+    id 'org.jetbrains.kotlin.android' version '1.9.22' apply false
+}
+
+allprojects {
     repositories {
         google()
         mavenCentral()
     }
-    dependencies {
-        def composeBom = platform('androidx.compose:compose-bom:2024.09.02')
-        implementation composeBom
-        androidTestImplementation composeBom
 
-        // Core Android
-        implementation 'androidx.core:core-ktx:1.13.1'
-        implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.8.6'
-        implementation 'androidx.activity:activity-compose:1.9.2'
-        implementation 'androidx.lifecycle:lifecycle-viewmodel-compose:2.8.6'
-
-        // Compose
-        implementation 'androidx.compose.ui:ui'
-        implementation 'androidx.compose.ui:ui-graphics'
-        implementation 'androidx.compose.ui:ui-tooling-preview'
-        implementation 'androidx.compose.material3:material3'
-        implementation 'androidx.compose.runtime:runtime'
-        debugImplementation 'androidx.compose.ui:ui-tooling'
-
-        // Room - Database
-        def room_version = "2.6.1"
-        implementation "androidx.room:room-runtime:$room_version"
-        implementation "androidx.room:room-ktx:$room_version"
-        ksp "androidx.room:room-compiler:$room_version"
-
-        // Retrofit - Network
-        implementation 'com.squareup.retrofit2:retrofit:2.11.0'
-        implementation 'com.squareup.retrofit2:converter-gson:2.11.0'
-        implementation 'com.squareup.okhttp3:logging-interceptor:4.12.0'
-
-        // Coroutines
-        implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1'
-        implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.8.1'
-
-        // Google Play Services
-        implementation 'com.google.android.gms:play-services-fitness:21.2.0'
-        implementation 'com.google.android.gms:play-services-location:21.3.0'
-
-        // WorkManager - Background tasks
-        implementation 'androidx.work:work-runtime-ktx:2.9.1'
-
-        // Glance - App widgets
-        implementation 'androidx.glance:glance:1.1.0'
-        implementation 'androidx.glance:glance-appwidget:1.1.0'
-
-        // DataStore - Preferences
-        implementation 'androidx.datastore:datastore-preferences:1.1.1'
-
-        // Splash Screen API (¡NUEVA LÍNEA!)
-        implementation 'androidx.core:core-splashscreen:1.0.1'
-
-        // Testing
-        testImplementation 'junit:junit:4.13.2'
-        androidTestImplementation 'androidx.test.ext:junit:1.2.1'
-        androidTestImplementation 'androidx.test.espresso:espresso-core:3.6.1'
-        androidTestImplementation 'androidx.compose.ui:ui-test-junit4'
+    tasks.withType(JavaCompile) {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 
-plugins {
-    id 'com.android.application' version '8.11.1' apply false
-    id 'com.android.library' version '8.11.1' apply false
-    id 'org.jetbrains.kotlin.android' version '1.9.24' apply false
-    id 'com.google.devtools.ksp' version '1.9.24-1.0.20' apply false
-}
-
-allprojects {
-    tasks.withType(JavaCompile).configureEach {
-        sourceCompatibility = JavaVersion.VERSION_21
-        targetCompatibility = JavaVersion.VERSION_21
-    }
-    tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+    tasks.withType(KotlinCompile).configureEach {
         kotlinOptions {
-            jvmTarget = '21'
+            jvmTarget = '17'
             freeCompilerArgs += [
-                '-opt-in=kotlin.RequiresOptIn',
-                '-opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi'
+                    '-opt-in=kotlin.RequiresOptIn',
+                    '-opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi'
             ]
         }
     }
