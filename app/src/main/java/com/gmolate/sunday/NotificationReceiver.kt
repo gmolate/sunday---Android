@@ -14,14 +14,14 @@ class NotificationReceiver : BroadcastReceiver() {
                 val notificationService = NotificationService(it)
                 // TODO: Cargar hora de notificación desde PreferencesManager
                 // Para la demostración, programamos una notificación a una hora fija (ej: 9 AM)
-                val dummyQuote = Quote("¡La vida es bella!", "Goose") // O cargar una cita real
-                notificationService.scheduleDailyNotification(9, 0, dummyQuote)
+                // val dummyQuote = Quote("¡La vida es bella!", "Goose") // O cargar una cita real
+                // notificationService.scheduleDailyNotification(9, 0, dummyQuote)
                 return
             } else if (intent?.action == "${it.packageName}.ACTION_SHOW_QUOTE_NOTIFICATION") {
-                val quoteText = intent.getStringExtra("quote_text") ?: "La inspiración te espera."
-                val quoteAuthor = intent.getStringExtra("quote_author") ?: "Anónimo"
-                val quote = Quote(quoteText, quoteAuthor)
-                NotificationService(it).showNotification(quote)
+                // val quoteText = intent.getStringExtra("quote_text") ?: "La inspiración te espera."
+                // val quoteAuthor = intent.getStringExtra("quote_author") ?: "Anónimo"
+                // val quote = Quote(quoteText, quoteAuthor)
+                // NotificationService(it).showNotification(quote)
             }
         }
     }
