@@ -64,3 +64,4 @@ iOSInjectionProject/
 # Environment files
 .env
 .env.local
+local.properties
