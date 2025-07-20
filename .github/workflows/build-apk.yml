@@ -18,10 +18,12 @@ jobs:
           cache: 'gradle'
       - name: Change wrapper permissions
         run: chmod +x ./gradlew
+      - name: List Available Tasks (Debug)
+        run: ./gradlew tasks --all  # Lista todas las tareas para verificar si :app:assembleDebug existe
       - name: Build APK Debug
-        run: ./gradlew :app:assembleDebug  # Agrega :app:
+        run: ./gradlew :app:assembleDebug --stacktrace --info  # Agrega flags para más detalles en logs
       - name: Build APK Release
-        run: ./gradlew :app:assembleRelease  # Agrega :app:
+        run: ./gradlew :app:assembleRelease --stacktrace --info  # Agrega flags para más detalles en logs
       - name: Upload APK Debug
         uses: actions/upload-artifact@v4
         with:
