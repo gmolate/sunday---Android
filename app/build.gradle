@@ -62,6 +62,7 @@ dependencies {
 
     // Core Android
     implementation 'androidx.core:core-ktx:1.16.0'
+    implementation "androidx.core:core-splashscreen:1.0.1"
 
     // Añade otras dependencias que uses (ej. Room, Retrofit, etc.) si no están aquí
 }
