@@ -2,7 +2,16 @@
 <resources>
 
     <!-- Tema principal de tu aplicación -->
-    <style name="Theme.Sunday" parent="android:Theme.Material.Light.NoActionBar" />
+    <style name="Theme.Sunday" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="postSplashScreenTheme">@style/SplashScreenTheme</item>
+    </style>
+
+    <!-- Define tema splash si es necesario -->
+    <style name="SplashScreenTheme" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@android:color/black</item>
+        <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher_round</item>
+        <item name="splashScreenIconSize">120dp</item>
+    </style>
 
     <!-- Estilo para el contenedor de los Widgets de la aplicación -->
     <!-- Esto asegura que el fondo del widget sea transparente y se alinee con el diseño -->
