@@ -1,7 +1,8 @@
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
-    id 'com.google.devtools.ksp'  // Añadido implícitamente por tu uso previo; agrega versión si necesario
+    id 'com.google.devtools.ksp'
+    id 'org.jetbrains.kotlin.plugin.compose'
 }
 
 android {
@@ -46,10 +47,6 @@ android {
         buildConfig true
     }
 
-    composeOptions {
-        kotlinCompilerExtensionVersion '1.5.15'  // Compatible con Kotlin 1.9.25; considera 1.6.11 si actualizas a Kotlin 2.2.0
-    }
-
     packaging {
         resources {
             excludes += '/META-INF/{AL2.0,LGPL2.1}'
@@ -59,7 +56,7 @@ android {
 
 dependencies {
     // Compose BOM (Baseline Version) - Versión estable
-    def composeBom = platform('androidx.compose:compose-bom:2025.06.00')  // Cambiado de 2025.06.01 a 2025.06.00
+    def composeBom = platform('androidx.compose:compose-bom:2025.06.01')
     implementation composeBom
     androidTestImplementation composeBom
 
