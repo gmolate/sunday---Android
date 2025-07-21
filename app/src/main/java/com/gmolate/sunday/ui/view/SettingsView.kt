@@ -18,13 +18,13 @@ import com.gmolate.sunday.data.UserPreferencesRepository
 import kotlinx.coroutines.launch
 
 @Composable
-fun SettingsView() {
+fun SettingsView(modifier: Modifier = Modifier) {
     val context = LocalContext.current
     val userPreferencesRepository = UserPreferencesRepository(context)
     val theme = userPreferencesRepository.theme.collectAsState(initial = "system").value
     val coroutineScope = rememberCoroutineScope()
 
-    Column(modifier = Modifier.padding(16.dp)) {
+    Column(modifier = modifier.padding(16.dp)) {
         Text("Theme", style = androidx.compose.material3.MaterialTheme.typography.titleLarge)
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -73,3 +73,4 @@ fun SettingsView() {
         }
     }
 }
+

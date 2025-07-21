@@ -22,8 +22,6 @@ import androidx.compose.ui.unit.sp
 import com.gmolate.sunday.ui.viewmodel.MainViewModel
 
 // Importaciones necesarias para el botón de configuración y el Dialog
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.ui.window.Dialog
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -204,7 +202,7 @@ fun ContentView(viewModel: MainViewModel) {
         Dialog(onDismissRequest = { showSettingsView = false }) {
             // Asegúrate de que SettingsView esté en el paquete correcto o impórtalo
             // Por ejemplo: com.gmolate.sunday.ui.view.SettingsView
-            SettingsView(Modifier.fillMaxSize())
+            SettingsView()
         }
     }
 }
@@ -327,5 +325,4 @@ private fun getMoonPhaseDescription(phase: Double): String {
         phase < 0.875 -> "Menguante"
         else -> "Luna Nueva"
     }
-}
 }

@@ -1,5 +1,7 @@
 import androidx.room.TypeConverter
 import java.util.Date
+import androidx.room.Entity
+import androidx.room.PrimaryKey
 
 class Converters {
     @TypeConverter
@@ -8,12 +10,3 @@ class Converters {
     @TypeConverter
     fun dateToTimestamp(date: Date?): Long? = date?.time
 }
-
-import androidx.room.Entity
-import androidx.room.PrimaryKey
-
-@Entity
-data class CachedMoonData(
-    @PrimaryKey val id: Int,
-    // ...otros campos...
-)
