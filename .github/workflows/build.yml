@@ -21,7 +21,7 @@ jobs:
       - name: Accept SDK licenses
         run: yes | sdkmanager --licenses
       - name: Install SDK components
-        run: sdkmanager "platforms;android-35" "build-tools;35.0.0"  # Adjust to your compileSdk and buildToolsVersion
+        run: sdkmanager "platforms;android-33" "build-tools;33.0.2"  # Adjust to your compileSdk and buildToolsVersion
       - name: Generate local.properties
         run: echo "sdk.dir=$ANDROID_SDK_ROOT" > local.properties
       - name: Build with Gradle
