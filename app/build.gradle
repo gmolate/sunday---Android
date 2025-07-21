@@ -1,6 +1,7 @@
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 
+    namespace "com.example.sunday_android"
 android {
     compileSdk 33
 
