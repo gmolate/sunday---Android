@@ -11,9 +11,13 @@ import android.content.pm.PackageManager
 import android.os.Build
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
+import com.gmolate.sunday.R
+import android.app.Service
+import android.os.IBinder
+import androidx.core.app.NotificationManagerCompat
 import java.util.*
 
-class NotificationService(private val context: Context) {
+class NotificationService : Service() {
 
     private val CHANNEL_ID = "sunday_notification_channel"
     private val NOTIFICATION_ID = 1
@@ -25,21 +29,21 @@ class NotificationService(private val context: Context) {
     private fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val name = "Sunday Notifications"
-            val descriptionText = "Notifications for daily quotes"
+            val descriptionText = "Notifications related to Sunday app features"
             val importance = NotificationManager.IMPORTANCE_DEFAULT
             val channel = NotificationChannel(CHANNEL_ID, name, importance).apply {
                 description = descriptionText
             }
-            val notificationManager: NotificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            val notificationManager: NotificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             notificationManager.createNotificationChannel(channel)
         }
     }
 
-    fun scheduleDailyNotification(hour: Int, minute: Int, quote: Quote) {
+    fun scheduleDailyNotification(hour: Int, minute: Int) {
         // Verificar permiso de notificaciones para Android 13+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ActivityCompat.checkSelfPermission(
-                    context,
+                    this,
                     Manifest.permission.POST_NOTIFICATIONS
                 ) != PackageManager.PERMISSION_GRANTED
             ) {
@@ -56,7 +60,7 @@ class NotificationService(private val context: Context) {
         // Este permiso se solicita en el AndroidManifest.xml y en tiempo de ejecución.
         // Por ahora, asumimos que se tiene o que las inexactas son suficientes (lo que no es el caso para replicar iOS).
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+            val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
             if (!alarmManager.canScheduleExactAlarms()) {
                 // Aquí deberíamos guiar al usuario para que conceda el permiso
                 // o informar que las notificaciones podrían no ser exactas.
@@ -66,14 +70,12 @@ class NotificationService(private val context: Context) {
         }
 
 
-        val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        val intent = Intent(context, NotificationReceiver::class.java).apply {
-            action = "${context.packageName}.ACTION_SHOW_QUOTE_NOTIFICATION" // Acción específica para nuestra alarma
-            putExtra("quote_text", quote.text)
-            putExtra("quote_author", quote.author)
+        val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        val intent = Intent(this, NotificationReceiver::class.java).apply {
+            action = "${packageName}.ACTION_SHOW_SUNDAY_NOTIFICATION" // Acción específica para nuestra alarma
         }
         val pendingIntent = PendingIntent.getBroadcast(
-            context,
+            this,
             0, // Request code
             intent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
@@ -112,12 +114,12 @@ class NotificationService(private val context: Context) {
     }
 
     fun cancelNotifications() {
-        val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        val intent = Intent(context, NotificationReceiver::class.java).apply {
-            action = "${context.packageName}.ACTION_SHOW_QUOTE_NOTIFICATION"
+        val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        val intent = Intent(this, NotificationReceiver::class.java).apply {
+            action = "${packageName}.ACTION_SHOW_SUNDAY_NOTIFICATION"
         }
         val pendingIntent = PendingIntent.getBroadcast(
-            context,
+            this,
             0,
             intent,
             PendingIntent.FLAG_NO_CREATE or PendingIntent.FLAG_IMMUTABLE
@@ -128,15 +130,39 @@ class NotificationService(private val context: Context) {
         }
     }
 
-    fun showNotification(quote: Quote) {
-        val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        val builder = NotificationCompat.Builder(context, CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_launcher_foreground) // Asegúrate de tener un icono
-            .setContentTitle("Tu dosis diaria de inspiración")
-            .setContentText("${quote.text} - ${quote.author}")
-            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-            .setAutoCancel(true) // Cierra la notificación al tocarla
+    private fun createUVNotification() {
+        val title = "UV Alert"
+        val content = "Current UV Index: Moderate - Time for Vitamin D!"
 
-        notificationManager.notify(NOTIFICATION_ID, builder.build())
+        val notification = NotificationCompat.Builder(this, CHANNEL_ID)
+            .setContentTitle(title)
+            .setContentText(content)
+            .setSmallIcon(R.drawable.ic_sun)
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .build()
+
+        with(NotificationManagerCompat.from(this)) {
+            notify(NOTIFICATION_ID, notification)
+        }
+    }
+
+    private fun createMoonPhaseNotification() {
+        val title = "Moon Phase Alert"
+        val content = "New Moon tonight - Perfect for stargazing!"
+
+        val notification = NotificationCompat.Builder(this, CHANNEL_ID)
+            .setContentTitle(title)
+            .setContentText(content)
+            .setSmallIcon(R.drawable.ic_moon)
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .build()
+
+        with(NotificationManagerCompat.from(this)) {
+            notify(NOTIFICATION_ID, notification)
+        }
+    }
+
+    override fun onBind(intent: Intent?): IBinder? {
+        return null
     }
 }

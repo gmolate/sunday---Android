@@ -1,0 +1,70 @@
+Eres un agente editor experto en VS Code para proyectos Android con Kotlin. Tu misión es editar el proyecto "Sunday" en el repositorio local (abierto en VS Code: C:/sunday---Android o similar), corrigiendo errores de compilación listados previamente. Ahora, elimina todo rastro de referencias a citas motivacionales ('Quote', 'text', 'author'), ya que no existen en la app original. Reemplaza en NotificationService.kt el contenido de notificaciones con alertas simples de UV o fases lunares (e.g., "UV Index: High - Get some sun!"). No crees clases como Quote.kt. Mantén todo minimalista, simple y compilable, fiel a la app iOS: UV tracking, vitamina D, moon phases, weather, location, health, notifications y widgets.
+
+1. Agregar Dependencias en app/build.gradle
+Abre app/build.gradle y en la sección dependencies {}, agrega las siguientes líneas exactamente como se indican (sin cambios para quotes). Asegúrate de que las repositories incluyan google() y mavenCentral(). Después, sincroniza Gradle (Tools > Gradle > Sync).
+
+implementation 'com.squareup.retrofit2:retrofit:2.9.0'
+implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
+implementation "androidx.datastore:datastore-preferences:1.1.1"
+implementation 'com.google.android.gms:play-services-location:21.3.0'
+implementation 'com.google.code.gson:gson:2.10.1'
+implementation 'androidx.core:core-ktx:1.13.1'
+implementation 'androidx.appcompat:appcompat:1.7.0'
+2. NO Crear Modelo Quote.kt
+No crees ningún archivo como app/src/main/java/com/gmolate/sunday/data/Quote.kt. Elimina si existe (pero como no lo hemos creado aún, ignora).
+
+3. Corregir NotificationService.kt (Eliminar Referencias a Quotes)
+Abre app/src/main/java/com/gmolate/sunday/NotificationService.kt.
+
+Agrega imports al inicio (sin import para Quote): import com.gmolate.sunday.R import androidx.core.app.NotificationCompat
+Elimina cualquier referencia a 'Quote' en líneas 38, 131 (comenta o borra las líneas que usen Quote).
+En líneas 72-73: Elimina 'text' y 'author'. Reemplaza con contenido fijo relacionado a la app, e.g., val title = "UV Alert"; val content = "Current UV Index: Moderate - Time for Vitamin D!".
+En línea 134: Corrige R (ya importado).
+En línea 135: Cambia a NotificationCompat.Builder(this, CHANNEL_ID).setContentTitle(title)
+En línea 136: Corrige a .setContentText(content)
+En otras líneas con 'text' o 'author' (e.g., 136:38 y 136:54): Reemplaza con las variables fijas title y content.
+Verifica: El servicio ahora envía notificaciones de UV o luna, no quotes.
+4. Corregir UserPreferencesRepository.kt
+Abre app/src/main/java/com/gmolate/sunday/data/UserPreferencesRepository.kt.
+
+Agrega imports al inicio: import androidx.datastore.core.DataStore import androidx.datastore.preferences.core.Preferences import androidx.datastore.preferences.core.booleanPreferencesKey import androidx.datastore.preferences.core.edit import androidx.datastore.preferences.core.intPreferencesKey import androidx.datastore.preferences.core.stringPreferencesKey import kotlinx.coroutines.flow.Flow import kotlinx.coroutines.flow.map
+En líneas 4-8: Corrige 'datastore' (ahora resuelto con dependency).
+En líneas 12,17,20-22: Corrige unresolved references y type mismatches usando preferences[KEY] ?: default.
+En línea 26: Usa dataStore.edit { preferences -> preferences[KEY] = value }
+Ejemplo para un flow: val exampleFlow: Flow<boolean> = dataStore.data.map { preferences -> preferences[EXAMPLE_KEY] ?: false }</boolean>
+No hay referencias a quotes aquí, así que no cambies nada extra.
+5. Corregir APIs con Retrofit (FarmsenseApi.kt, MoonPhaseService.kt, OpenMeteoApi.kt, UVService.kt)
+Para cada archivo:
+
+Agrega imports: import retrofit2.Call import retrofit2.http.GET import retrofit2.http.Query import retrofit2.Retrofit import retrofit2.converter.gson.GsonConverterFactory import retrofit2.HttpException
+En FarmsenseApi.kt: Corrige GET y Query.
+En MoonPhaseService.kt: Corrige Retrofit.Builder().addConverterFactory(GsonConverterFactory.create()).baseUrl("URL").build(); Corrige HttpException en línea 75.
+En OpenMeteoApi.kt: Corrige múltiples Query y GET.
+En UVService.kt: Similar, corrige Retrofit y GsonConverterFactory en línea 24; HttpException en 91.
+No hay quotes aquí.
+6. Corregir LocationManager.kt y HealthManager.kt
+Abre LocationManager.kt:
+
+Agrega imports: import com.google.android.gms.location.FusedLocationProviderClient import com.google.android.gms.location.LocationServices import com.google.android.gms.location.LocationRequest import com.google.android.gms.location.Priority import com.google.android.gms.tasks.Task
+Corrige líneas 7-9,13,21,36-37,40,44,47,84: Usa LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 1000L).build(), fusedLocationClient.getLastLocation(), etc.
+Especifica tipos en callbacks: addOnSuccessListener { location: Location? -> ... }
+Para HealthManager.kt: Similar, corrige 'tasks' con imports de Google Play Services.
+
+7. Corregir VitaminDCalculator.kt
+Corrige conflicting imports en líneas 3 y 11: Elimina import java.math.* si no se usa, o usa alias como import kotlin.math.sin as kSin.
+8. Corregir ContentView.kt
+En línea 31: Corrige delegate con by viewModel.moonPhase (asegúrate de que moonPhase esté definido en ViewModel, no relacionado a quotes).
+En línea 140: Corrige type mismatch ajustando argumentos.
+9. Corregir SundayWidget.kt
+Agrega import com.gmolate.sunday.R al inicio.
+Corrige todas las referencias a R.drawable.ic_... (asegúrate de que los recursos existan en res/drawable). No quotes aquí.
+10. Pasos Finales de Verificación
+Después de todos los cambios:
+
+Guarda todos los archivos.
+Limpia el proyecto: En VS Code, usa terminal: ./gradlew clean
+Rebuild: ./gradlew build
+Si hay errores de recursos, verifica XML en res/layout y res/values.
+Ejecuta la app en emulador (./gradlew installDebug) para probar básico: UV, vitamina D, moon phases, weather, location, notifications (ahora de UV/luna).
+Mantén fidelidad a la original: simple, sin quotes ni over-engineering.
+Si encuentras conflictos o errores nuevos, reporta el mensaje exacto y sugiere fixes minimalistas. ¡Aplicamos estos cambios y compilamos esta app interplanetaria!

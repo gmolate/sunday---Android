@@ -83,7 +83,7 @@ class UVService(
             // Notificar si el UV es alto (solo si no estamos en modo offline)
             if (response.daily.uv_index_max.firstOrNull() ?: 0.0 >= HIGH_UV_THRESHOLD) {
                 try {
-                    notificationService.showUVAlert(response.daily.uv_index_max.first())
+                    // notificationService.showUVAlert(response.daily.uv_index_max.first()) // Comentado, la notificación ya se gestiona en NotificationService.kt
                 } catch (notificationError: Exception) {
                     // Error en notificación no debe afectar la funcionalidad principal
                 }
