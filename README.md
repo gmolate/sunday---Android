@@ -98,8 +98,10 @@ The app requires the following permissions:
 
 - **Android Studio**: 2024.3.1 (Meerkat) or newer
 - **JDK**: 17
-- **Android Gradle Plugin**: 8.9.1
-- **Gradle**: 8.11.1
+- **Android Gradle Plugin**: 8.4.1
+- **Gradle**: 8.7
+
+**Note:** The project is currently experiencing a build issue related to the Android SDK location. The build fails with an "SDK location not found" error, even when the `ANDROID_HOME` environment variable is set correctly. This issue is still under investigation.
 
 ## 🚀 Installation & Setup
 

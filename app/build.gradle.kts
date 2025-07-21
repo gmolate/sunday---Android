@@ -56,7 +56,7 @@ android {
     }
 
     composeOptions {
-        // Remove explicit kotlinCompilerExtensionVersion - use implicit from Kotlin 2.2.0
+        // Remove explicit kotlinCompilerExtensionVersion - use implicit from Kotlin 2.0.0
     }
 
     packaging {
@@ -80,21 +80,21 @@ dependencies {
     implementation(libs.androidx.material3)
     
     // Additional core dependencies for API 35 compatibility
-    implementation("androidx.core:core-splashscreen:1.0.1")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.7")
-    implementation("androidx.navigation:navigation-compose:2.8.4")
+    implementation(libs.androidx.core.splashscreen)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.androidx.navigation.compose)
 
     // Room
-    implementation("androidx.room:room-runtime:2.6.1")
-    implementation("androidx.room:room-ktx:2.6.1")
-    ksp("androidx.room:room-compiler:2.6.1")
+    implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.room.ktx)
+    ksp(libs.androidx.room.compiler)
 
     // Gson (para TypeConverters de Room)
-    implementation("com.google.code.gson:gson:2.10.1")
+    implementation(libs.gson)
 
     // Google Play Services
-    implementation("com.google.android.gms:play-services-auth:21.2.0")
-    implementation("com.google.android.gms:play-services-fitness:21.2.0")
+    implementation(libs.play.services.auth)
+    implementation(libs.play.services.fitness)
     
     // Testing dependencies
     testImplementation(libs.junit)
