@@ -2,12 +2,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-    <uses-permission android:name="android.permission.health.READ_VITAMIN_D" />
-    <uses-permission android:name="android.permission.health.WRITE_VITAMIN_D" />
-
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <application
         android:allowBackup="true"
@@ -17,47 +14,18 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.Sunday"
+        android:theme="@style/Theme.SundayAndroidApp"
         tools:targetApi="31">
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:label="@string/app_name"
-            android:theme="@style/Theme.Sunday">
+            android:theme="@style/Theme.App.Starting"> <!-- CAMBIO A Theme.App.Starting -->
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
-        <!-- Health Connect -->
-        <activity
-            android:name="androidx.health.connect.client.impl.ui.HealthConnectAppInfoActivity"
-            android:exported="false"
-            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
-        <activity
-            android:name="androidx.health.connect.client.impl.ui.HealthConnectPermissionsActivity"
-            android:exported="true"
-            android:theme="@android:style/Theme.Translucent.NoTitleBar"
-            tools:replace="android:exported" />
-        <activity
-            android:name="androidx.health.connect.client.impl.ui.HealthConnectRationaleActivity"
-            android:exported="true"
-            android:theme="@android:style/Theme.Translucent.NoTitleBar"
-            tools:replace="android:exported" />
-
-        <!-- Widget -->
-        <receiver android:name=".SundayWidgetReceiver"
-            android:exported="false">
-            <intent-filter>
-                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-            </intent-filter>
-            <meta-data
-                android:name="android.appwidget.provider"
-                android:resource="@xml/sunday_widget_info" />
-        </receiver>
-
     </application>
 
 </manifest>

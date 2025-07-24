@@ -1,9 +1,17 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="Theme.Sunday" parent="android:Theme.Material.Light.NoActionBar">
-        <item name="android:statusBarColor">@android:color/transparent</item>
-        <item name="android:navigationBarColor">@android:color/transparent</item>
-        <item name="android:windowLightStatusBar">true</item>
+    <!-- Base application theme. This is the theme applied after the splash screen. -->
+    <style name="Theme.SundayAndroidApp" parent="Theme.MaterialComponents.DayNight.NoActionBar" />
+
+    <!-- Theme for the splash screen. -->
+    <style name="Theme.App.Starting" parent="Theme.SplashScreen">
+        <!-- Set the splash screen background. -->
+        <item name="android:windowSplashScreenBackground">@android:color/white</item>
+        <!-- Set the splash screen animated icon. -->
+        <item name="android:windowSplashScreenAnimatedIcon">@mipmap/ic_launcher_round</item>
+        <!-- The theme to apply once the splash screen is removed. -->
+        <item name="android:postSplashScreenTheme">@style/Theme.SundayAndroidApp</item>
     </style>
+
 </resources>
