@@ -22,6 +22,16 @@ enum ClothingLevel: Int, CaseIterable {
         }
     }
     
+    var shortDescription: String {
+        switch self {
+        case .none: return "Nude!"
+        case .minimal: return "Minimal"
+        case .light: return "Light"
+        case .moderate: return "Moderate"
+        case .heavy: return "Heavy"
+        }
+    }
+    
     var exposureFactor: Double {
         switch self {
         case .none: return 1.0
@@ -29,6 +39,34 @@ enum ClothingLevel: Int, CaseIterable {
         case .light: return 0.50
         case .moderate: return 0.30
         case .heavy: return 0.10
+        }
+    }
+}
+
+enum SunscreenLevel: Int, CaseIterable {
+    case none = 0
+    case spf15 = 15
+    case spf30 = 30
+    case spf50 = 50
+    case spf100 = 100
+    
+    var description: String {
+        switch self {
+        case .none: return "No sunscreen"
+        case .spf15: return "SPF 15"
+        case .spf30: return "SPF 30"
+        case .spf50: return "SPF 50"
+        case .spf100: return "SPF 100+"
+        }
+    }
+    
+    var uvTransmissionFactor: Double {
+        switch self {
+        case .none: return 1.0      // 100% UV passes through
+        case .spf15: return 0.07    // ~7% UV passes through (blocks 93%)
+        case .spf30: return 0.03    // ~3% UV passes through (blocks 97%)
+        case .spf50: return 0.02    // ~2% UV passes through (blocks 98%)
+        case .spf100: return 0.01   // ~1% UV passes through (blocks 99%)
         }
     }
 }
@@ -71,6 +109,11 @@ class VitaminDCalculator: ObservableObject {
             UserDefaults.standard.set(clothingLevel.rawValue, forKey: "preferredClothingLevel")
         }
     }
+    @Published var sunscreenLevel: SunscreenLevel = .none {
+        didSet {
+            UserDefaults.standard.set(sunscreenLevel.rawValue, forKey: "preferredSunscreenLevel")
+        }
+    }
     @Published var skinType: SkinType = .type3 {
         didSet {
             UserDefaults.standard.set(skinType.rawValue, forKey: "userSkinType")
@@ -109,6 +152,7 @@ class VitaminDCalculator: ObservableObject {
     private var appActiveObserver: NSObjectProtocol?
     private var appBackgroundObserver: NSObjectProtocol?
     private var wasTrackingBeforeBackground = false
+    private var lastSessionSaveTime: Date?
     
     // UV response curve parameters
     private let uvHalfMax = 4.0  // UV index for 50% vitamin D synthesis rate (more linear)
@@ -117,6 +161,7 @@ class VitaminDCalculator: ObservableObject {
     init() {
         loadUserPreferences()
         setupAppLifecycleObservers()
+        restoreActiveSession()
     }
     
     deinit {
@@ -150,6 +195,11 @@ class VitaminDCalculator: ObservableObject {
             clothingLevel = clothing
         }
         
+        if let savedSunscreenLevel = UserDefaults.standard.object(forKey: "preferredSunscreenLevel") as? Int,
+           let sunscreen = SunscreenLevel(rawValue: savedSunscreenLevel) {
+            sunscreenLevel = sunscreen
+        }
+        
         if let savedSkinType = UserDefaults.standard.object(forKey: "userSkinType") as? Int,
            let skin = SkinType(rawValue: savedSkinType) {
             skinType = skin
@@ -172,6 +222,8 @@ class VitaminDCalculator: ObservableObject {
             // Save tracking state and pause timer
             self.wasTrackingBeforeBackground = self.isInSun
             if self.isInSun {
+                // Save session state before going to background
+                self.saveActiveSession()
                 self.timer?.invalidate()
                 self.timer = nil
             }
@@ -202,11 +254,18 @@ class VitaminDCalculator: ObservableObject {
     func startSession(uvIndex: Double) {
         guard isInSun else { return }
         
-        sessionStartTime = Date()
-        sessionVitaminD = 0.0
-        cumulativeMEDFraction = 0.0
+        // Only reset session data if we're starting a new session (not resuming)
+        if sessionStartTime == nil {
+            sessionStartTime = Date()
+            sessionVitaminD = 0.0
+            cumulativeMEDFraction = 0.0
+            lastUpdateTime = Date()
+        }
+        
         lastUV = uvIndex
-        lastUpdateTime = Date()
+        
+        // Save initial session state
+        saveActiveSession()
         
         // Update every second for real-time display
         timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
@@ -228,6 +287,9 @@ class VitaminDCalculator: ObservableObject {
         
         // Cancel any pending burn warnings
         UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: ["burnWarning"])
+        
+        // Clear saved session state
+        saveActiveSession()
         
         // Update widget data
         updateWidgetData()
@@ -253,6 +315,9 @@ class VitaminDCalculator: ObservableObject {
         // Exposure based on clothing coverage
         let exposureFactor = clothingLevel.exposureFactor
         
+        // Sunscreen blocks UV radiation
+        let sunscreenFactor = sunscreenLevel.uvTransmissionFactor
+        
         // Skin type affects vitamin D synthesis efficiency
         let skinFactor = skinType.vitaminDFactor
         
@@ -277,8 +342,8 @@ class VitaminDCalculator: ObservableObject {
         // Calculate UV quality factor based on time of day
         currentUVQualityFactor = calculateUVQualityFactor()
         
-        // Final calculation: base * UV * clothing * skin type * age * quality * adaptation
-        currentVitaminDRate = baseRate * uvFactor * exposureFactor * skinFactor * ageFactor * currentUVQualityFactor * currentAdaptationFactor
+        // Final calculation: base * UV * clothing * sunscreen * skin type * age * quality * adaptation
+        currentVitaminDRate = baseRate * uvFactor * exposureFactor * sunscreenFactor * skinFactor * ageFactor * currentUVQualityFactor * currentAdaptationFactor
         
         // Update widget with new rate
         updateWidgetData()
@@ -297,6 +362,12 @@ class VitaminDCalculator: ObservableObject {
         
         // Add vitamin D based on actual elapsed time
         sessionVitaminD += currentVitaminDRate * (elapsed / 3600.0)
+        
+        // Save session state every 10 seconds
+        if lastSessionSaveTime == nil || now.timeIntervalSince(lastSessionSaveTime!) >= 10.0 {
+            saveActiveSession()
+            lastSessionSaveTime = now
+        }
         
         // Update widget data
         updateWidgetData()
@@ -321,7 +392,7 @@ class VitaminDCalculator: ObservableObject {
         updateWidgetData()
     }
     
-    func calculateVitaminD(uvIndex: Double, exposureMinutes: Double, skinType: SkinType, clothingLevel: ClothingLevel) -> Double {
+    func calculateVitaminD(uvIndex: Double, exposureMinutes: Double, skinType: SkinType, clothingLevel: ClothingLevel, sunscreenLevel: SunscreenLevel = .none) -> Double {
         // Base rate: 21000 IU/hr for Type 3 skin with minimal clothing (80% exposure)
         let baseRate = 21000.0
         
@@ -330,6 +401,9 @@ class VitaminDCalculator: ObservableObject {
         
         // Exposure based on clothing coverage
         let exposureFactor = clothingLevel.exposureFactor
+        
+        // Sunscreen blocks UV radiation
+        let sunscreenFactor = sunscreenLevel.uvTransmissionFactor
         
         // Skin type affects vitamin D synthesis efficiency
         let skinFactor = skinType.vitaminDFactor
@@ -354,7 +428,7 @@ class VitaminDCalculator: ObservableObject {
         let adaptationFactor = currentAdaptationFactor
         
         // Calculate hourly rate
-        let hourlyRate = baseRate * uvFactor * exposureFactor * skinFactor * ageFactor * adaptationFactor
+        let hourlyRate = baseRate * uvFactor * exposureFactor * sunscreenFactor * skinFactor * ageFactor * adaptationFactor
         
         // Convert to amount for given minutes
         return hourlyRate * (exposureMinutes / 60.0)
@@ -532,6 +606,9 @@ class VitaminDCalculator: ObservableObject {
         sharedDefaults?.set(isInSun, forKey: "isTracking")
         sharedDefaults?.set(currentVitaminDRate, forKey: "vitaminDRate")
         
+        // Force synchronize UserDefaults before widget update
+        sharedDefaults?.synchronize()
+        
         // Calculate today's total including current session
         let calendar = Calendar.current
         let startOfDay = calendar.startOfDay(for: Date())
@@ -542,8 +619,60 @@ class VitaminDCalculator: ObservableObject {
             let todaysTotal = total + self.sessionVitaminD
             self.sharedDefaults?.set(todaysTotal, forKey: "todaysTotal")
             
+            // Force synchronize again after setting today's total
+            self.sharedDefaults?.synchronize()
+            
             // Trigger widget update
             WidgetCenter.shared.reloadAllTimelines()
         }
+    }
+    
+    private func saveActiveSession() {
+        guard isInSun else {
+            // Clear any saved session if not tracking
+            UserDefaults.standard.removeObject(forKey: "activeSessionStartTime")
+            UserDefaults.standard.removeObject(forKey: "activeSessionVitaminD")
+            UserDefaults.standard.removeObject(forKey: "activeSessionMED")
+            UserDefaults.standard.removeObject(forKey: "activeSessionLastUV")
+            UserDefaults.standard.removeObject(forKey: "activeSessionLastUpdate")
+            return
+        }
+        
+        // Save current session state
+        UserDefaults.standard.set(sessionStartTime, forKey: "activeSessionStartTime")
+        UserDefaults.standard.set(sessionVitaminD, forKey: "activeSessionVitaminD")
+        UserDefaults.standard.set(cumulativeMEDFraction, forKey: "activeSessionMED")
+        UserDefaults.standard.set(lastUV, forKey: "activeSessionLastUV")
+        UserDefaults.standard.set(lastUpdateTime, forKey: "activeSessionLastUpdate")
+    }
+    
+    private func restoreActiveSession() {
+        // Check if there's a saved active session
+        guard let savedStartTime = UserDefaults.standard.object(forKey: "activeSessionStartTime") as? Date else {
+            return
+        }
+        
+        // Check if session is from today (don't restore old sessions)
+        let calendar = Calendar.current
+        guard calendar.isDateInToday(savedStartTime) else {
+            // Clear old session data
+            UserDefaults.standard.removeObject(forKey: "activeSessionStartTime")
+            UserDefaults.standard.removeObject(forKey: "activeSessionVitaminD")
+            UserDefaults.standard.removeObject(forKey: "activeSessionMED")
+            UserDefaults.standard.removeObject(forKey: "activeSessionLastUV")
+            UserDefaults.standard.removeObject(forKey: "activeSessionLastUpdate")
+            return
+        }
+        
+        // Restore session state
+        sessionStartTime = savedStartTime
+        sessionVitaminD = UserDefaults.standard.double(forKey: "activeSessionVitaminD")
+        cumulativeMEDFraction = UserDefaults.standard.double(forKey: "activeSessionMED")
+        lastUV = UserDefaults.standard.double(forKey: "activeSessionLastUV")
+        lastUpdateTime = UserDefaults.standard.object(forKey: "activeSessionLastUpdate") as? Date
+        
+        // Mark as tracking but don't start timer yet (wait for app to be fully initialized)
+        isInSun = true
+        wasTrackingBeforeBackground = true
     }
 }

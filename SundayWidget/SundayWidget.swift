@@ -70,7 +70,19 @@ struct Provider: IntentTimelineProvider {
             entries.append(entry)
         }
 
-        let timeline = Timeline(entries: entries, policy: .atEnd)
+        // Update more frequently when tracking, less frequently when not
+        let updatePolicy: TimelineReloadPolicy
+        if isTracking {
+            // Update every minute when actively tracking
+            let nextUpdate = Calendar.current.date(byAdding: .minute, value: 1, to: currentDate)!
+            updatePolicy = .after(nextUpdate)
+        } else {
+            // Update every 15 minutes when not tracking
+            let nextUpdate = Calendar.current.date(byAdding: .minute, value: 15, to: currentDate)!
+            updatePolicy = .after(nextUpdate)
+        }
+        
+        let timeline = Timeline(entries: entries, policy: updatePolicy)
         completion(timeline)
     }
 }

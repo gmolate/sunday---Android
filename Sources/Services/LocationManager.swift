@@ -2,15 +2,20 @@ import Foundation
 import CoreLocation
 import WidgetKit
 import Combine
+import UIKit
 
 class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     @Published var location: CLLocation?
     @Published var authorizationStatus: CLAuthorizationStatus = .notDetermined
     @Published var isUpdatingLocation = false
+    @Published var showLocationDeniedAlert = false
+    @Published var locationServicesEnabled = true
     @Published var locationName: String = "" {
         didSet {
             // Share location name with widget
             sharedDefaults?.set(locationName, forKey: "locationName")
+            // Force synchronize to ensure widget gets updated data
+            sharedDefaults?.synchronize()
             // Trigger widget update
             WidgetCenter.shared.reloadAllTimelines()
         }
@@ -53,7 +58,23 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     }
     
     func requestPermission() {
-        manager.requestWhenInUseAuthorization()
+        // Check authorization status first to avoid blocking UI
+        authorizationStatus = manager.authorizationStatus
+        
+        switch authorizationStatus {
+        case .notDetermined:
+            // Only request authorization if not determined
+            // The actual request will be handled asynchronously
+            manager.requestWhenInUseAuthorization()
+        case .authorizedWhenInUse, .authorizedAlways:
+            // Already authorized, start updating location
+            startUpdatingLocation()
+        case .denied, .restricted:
+            // Handle denial through the locationManagerDidChangeAuthorization callback
+            break
+        @unknown default:
+            break
+        }
     }
     
     func startUpdatingLocation() {
@@ -126,11 +147,54 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
         authorizationStatus = manager.authorizationStatus
         
+        // Determine location services status based on authorization
+        // This avoids the synchronous call that can block UI
         switch authorizationStatus {
         case .authorizedWhenInUse, .authorizedAlways:
+            locationServicesEnabled = true
             startUpdatingLocation()
-        default:
+            showLocationDeniedAlert = false
+        case .denied:
+            locationServicesEnabled = true // Services are enabled, just denied for this app
             stopUpdatingLocation()
+            // Only show alert if we haven't shown it before in this session
+            if !UserDefaults.standard.bool(forKey: "hasShownLocationDeniedAlert") {
+                showLocationDeniedAlert = true
+                UserDefaults.standard.set(true, forKey: "hasShownLocationDeniedAlert")
+            }
+        case .restricted:
+            locationServicesEnabled = false // Restricted usually means services are disabled
+            stopUpdatingLocation()
+            // Only show alert if we haven't shown it before in this session
+            if !UserDefaults.standard.bool(forKey: "hasShownLocationDeniedAlert") {
+                showLocationDeniedAlert = true
+                UserDefaults.standard.set(true, forKey: "hasShownLocationDeniedAlert")
+            }
+        case .notDetermined:
+            locationServicesEnabled = true // Assume enabled until proven otherwise
+            // Will be prompted when we request authorization
+            break
+        @unknown default:
+            break
+        }
+    }
+    
+    func openSettings() {
+        if let url = URL(string: UIApplication.openSettingsURLString) {
+            UIApplication.shared.open(url)
+        }
+    }
+    
+    func resetLocationDeniedAlert() {
+        // Reset the flag when app becomes active again
+        UserDefaults.standard.set(false, forKey: "hasShownLocationDeniedAlert")
+    }
+    
+    var locationDeniedMessage: String {
+        if !locationServicesEnabled {
+            return "Location Services are disabled. Please enable Location Services in Settings > Privacy & Security > Location Services."
+        } else {
+            return "Sun Day needs your location to determine UV levels and calculate vitamin D production. Please enable location access in Settings."
         }
     }
     

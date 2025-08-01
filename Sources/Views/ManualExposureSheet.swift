@@ -11,7 +11,9 @@ struct ManualExposureSheet: View {
     @State private var startTime = Date()
     @State private var endTime = Date()
     @State private var selectedClothing: ClothingLevel = .light
+    @State private var selectedSunscreen: SunscreenLevel = .none
     @State private var showClothingPicker = false
+    @State private var showSunscreenPicker = false
     @State private var isCalculating = false
     @State private var calculatedVitaminD: Double = 0
     @State private var errorMessage: String?
@@ -95,35 +97,69 @@ struct ManualExposureSheet: View {
                             .foregroundColor(.secondary)
                     }
                     
-                    // Clothing selection
-                    Button(action: { showClothingPicker.toggle() }) {
-                        VStack(spacing: 10) {
-                            Text("CLOTHING")
-                                .font(.system(size: 10, weight: .bold))
-                                .foregroundColor(.white.opacity(0.7))
-                                .tracking(1.5)
-                            
-                            HStack {
-                                Text(selectedClothing.description)
-                                    .font(.system(size: 16, weight: .medium))
+                    // Clothing and Sunscreen selection
+                    HStack(spacing: 12) {
+                        // Clothing button
+                        Button(action: { showClothingPicker.toggle() }) {
+                            VStack(spacing: 10) {
+                                Text("CLOTHING")
+                                    .font(.system(size: 10, weight: .bold))
+                                    .foregroundColor(.white.opacity(0.7))
+                                    .tracking(1.5)
                                 
-                                Image(systemName: "chevron.down")
-                                    .font(.system(size: 12))
+                                HStack {
+                                    Text(selectedClothing.shortDescription)
+                                        .font(.system(size: 16, weight: .medium))
+                                    
+                                    Image(systemName: "chevron.down")
+                                        .font(.system(size: 12))
+                                }
+                                .foregroundColor(.white)
                             }
-                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 15)
+                            .background(Color.black.opacity(0.2))
+                            .cornerRadius(15)
                         }
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 15)
-                        .background(Color.black.opacity(0.2))
-                        .cornerRadius(15)
-                    }
-                    .sheet(isPresented: $showClothingPicker) {
-                        ClothingPicker(selection: $selectedClothing)
-                            .presentationDetents([.medium])
-                            .presentationDragIndicator(.visible)
-                    }
-                    .onChange(of: selectedClothing) { _, _ in
-                        calculateVitaminD()
+                        .sheet(isPresented: $showClothingPicker) {
+                            ClothingPicker(selection: $selectedClothing)
+                                .presentationDetents([.medium])
+                                .presentationDragIndicator(.visible)
+                        }
+                        .onChange(of: selectedClothing) { _, _ in
+                            calculateVitaminD()
+                        }
+                        
+                        // Sunscreen button
+                        Button(action: { showSunscreenPicker.toggle() }) {
+                            VStack(spacing: 10) {
+                                Text("SUNSCREEN")
+                                    .font(.system(size: 10, weight: .bold))
+                                    .foregroundColor(.white.opacity(0.7))
+                                    .tracking(1.5)
+                                
+                                HStack {
+                                    Text(selectedSunscreen.description)
+                                        .font(.system(size: 16, weight: .medium))
+                                    
+                                    Image(systemName: "chevron.down")
+                                        .font(.system(size: 12))
+                                }
+                                .foregroundColor(.white)
+                            }
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 15)
+                            .background(Color.black.opacity(0.2))
+                            .cornerRadius(15)
+                        }
+                        .sheet(isPresented: $showSunscreenPicker) {
+                            SunscreenPicker(selection: $selectedSunscreen)
+                                .presentationDetents([.medium])
+                                .presentationDragIndicator(.visible)
+                        }
+                        .onChange(of: selectedSunscreen) { _, _ in
+                            calculateVitaminD()
+                        }
                     }
                     
                     // Error message
@@ -270,7 +306,8 @@ struct ManualExposureSheet: View {
                         uvIndex: uvIndex,
                         exposureMinutes: duration,
                         skinType: vitaminDCalculator.skinType,
-                        clothingLevel: selectedClothing
+                        clothingLevel: selectedClothing,
+                        sunscreenLevel: selectedSunscreen
                     )
                     
                     totalVitaminD += vitaminD

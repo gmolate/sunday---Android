@@ -255,6 +255,7 @@ class UVService: ObservableObject {
                         self.currentCloudCover = cloudCover[hour]
                         // Share with widget
                         sharedDefaults?.set(self.currentCloudCover, forKey: "currentCloudCover")
+                        sharedDefaults?.synchronize()
                     }
                     
                     // Calculate safe exposure times
@@ -267,6 +268,9 @@ class UVService: ObservableObject {
                     if self.isOfflineMode {
                         self.isOfflineMode = false
                     }
+                    
+                    // Force synchronize widget data before update
+                    sharedDefaults?.synchronize()
                     
                     // Trigger widget update
                     WidgetCenter.shared.reloadAllTimelines()
@@ -402,7 +406,7 @@ class UVService: ObservableObject {
         // Use Farmsense API - completely free, no API key needed!
         // API expects unix timestamp (uses first 10 digits)
         let timestamp = Int(Date().timeIntervalSince1970)
-        let urlString = "https://api.farmsense.net/v1/moonphases/?d=\(timestamp)"
+        let urlString = "http://api.farmsense.net/v1/moonphases/?d=\(timestamp)"
         
         guard let url = URL(string: urlString) else { 
             return 
@@ -626,6 +630,9 @@ class UVService: ObservableObject {
                 
                 calculateSafeExposureTimes()
                 checkVitaminDWinter()
+                
+                // Force synchronize widget data before update
+                sharedDefaults?.synchronize()
                 
                 // Trigger widget update
                 WidgetCenter.shared.reloadAllTimelines()
